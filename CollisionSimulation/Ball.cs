@@ -248,17 +248,30 @@ namespace CollisionSimulation
             {
                 Double d = ChkCollision(Ball1, Ball2);
                 Single Correction = 0;
+                Double k;
                 if (d > 0)
                     return new Momentum(0, 0);
                 if (TimeRate != 0)
                     Correction = CorrectPosition(ref Ball1, ref Ball2, TimeRate);
+
                 Momentum Imp = new Momentum(Ball2.Pos.x - Ball1.Pos.x, Ball2.Pos.y - Ball1.Pos.y);
+
                 if (Imp.x != 0)
                 {
-                    Double k = Imp.y / Imp.x;           //j=ki
-                    Imp.x = 2 * (Ball1.P.x * Ball2.Mass - Ball2.P.x * Ball1.Mass + k * Ball1.P.y * Ball2.Mass - k * Ball2.P.y * Ball1.Mass)
-                        / ((Ball1.Mass + Ball2.Mass) * (k * k + 1));
-                    Imp.y = k * Imp.x;
+                    k = Imp.y / Imp.x;
+                    if (k >= -1 && k <= 1)
+                    {
+                        Imp.x = 2 * (Ball1.P.x * Ball2.Mass - Ball2.P.x * Ball1.Mass + k * Ball1.P.y * Ball2.Mass - k * Ball2.P.y * Ball1.Mass)
+                            / ((Ball1.Mass + Ball2.Mass) * (k * k + 1));
+                        Imp.y = k * Imp.x;
+                    }
+                    else
+                    {
+                        k = Imp.x / Imp.y;
+                        Imp.y = 2 * (Ball1.P.y * Ball2.Mass - Ball2.P.y * Ball1.Mass + k * Ball1.P.x * Ball2.Mass - k * Ball2.P.x * Ball1.Mass)
+                            / ((Ball1.Mass + Ball2.Mass) * (k * k + 1));
+                        Imp.x = k * Imp.y;
+                    }
                 }
                 else
                 {
@@ -266,6 +279,7 @@ namespace CollisionSimulation
                 }
                 Ball1.P = Vector.Add(Ball1.P, Vector.Multiple(Imp, -1));
                 Ball2.P = Vector.Add(Ball2.P, Imp);
+
                 if (TimeRate != 0 && Correction > 0)
                 {
                     Ball1.Move(TimeRate * Correction);
