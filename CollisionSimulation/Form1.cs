@@ -12,8 +12,13 @@ namespace CollisionSimulation
 {
     public partial class Form1 : Form
     {
-        VisibleBall a, b;
-        Double tr;
+        const Double    DEFAULT_SIZE = 2,
+                        DEFAULT_TIMERATE = 0.2,
+                        DEFAULT_ORI_X = 200,
+                        DEFAULT_ORI_Y = 100;
+
+        VisibleBall a, b, c;
+        Double tr, sz;
         Ball.Position O;
         Bitmap bmp;
         Graphics g;
@@ -27,27 +32,27 @@ namespace CollisionSimulation
         {
         }
 
-        private void Form1_Paint(object sender, PaintEventArgs e)
-        {
-        }
-
         private void button1_Click(object sender, EventArgs e)
         {
-            /*
-            Ball.Momentum m = Ball.Calc.Collide(ref a, ref b);
-            MessageBox.Show(a.GetVx().ToString() + " " + a.GetVy().ToString() + "\n"
-                + b.GetVx().ToString() + " " + b.GetVy().ToString() + "\n"
-                + m.x.ToString() + " " + m.y.ToString());
-             */
-            a = new VisibleBall(0.5, 14.15, Color.MediumVioletRed, 0, 60, 15, -7);
+            a = new VisibleBall(0.5, 14.15, Color.MediumVioletRed, 3, 55, 15, -7);
             b = new VisibleBall(1, 14.15, Color.Lime, 80, 0, -12, 5);
-            O.x = 200;
-            O.y = 100;
-            tr = 0.2;
+            c = new VisibleBall(0.8, 14.15, Color.Aquamarine, 10, -5, 20, 10);
+
+            O.x = DEFAULT_ORI_X;
+            O.y = DEFAULT_ORI_Y;
+            tr = DEFAULT_TIMERATE;
+
+            if (checkBox1.Checked)
+                sz = DEFAULT_SIZE;
+            else
+                sz = 0;
 
             this.BackgroundImageLayout = ImageLayout.Center;
             this.BackgroundImage = bmp;
 
+            button1.Text = "Restart";
+            button2.Text = "Pause";
+            button2.Enabled = true;
             timer1.Enabled = true;
         }
 
@@ -55,16 +60,45 @@ namespace CollisionSimulation
         {
             a.Move(tr);
             b.Move(tr);
+            c.Move(tr);
             if (VisibleBall.ChkCollision(a, b) <= 0)
                 VisibleBall.Collide(ref a, ref b, tr);
+            if (VisibleBall.ChkCollision(a, c) <= 0)
+                VisibleBall.Collide(ref a, ref c, tr);
+            if (VisibleBall.ChkCollision(b, c) <= 0)
+                VisibleBall.Collide(ref b, ref c, tr);
+
 
             bmp = new Bitmap(this.Width, this.Height);
             g = Graphics.FromImage(bmp);
-            a.Draw(ref g, O);
-            b.Draw(ref g, O);
+            a.Draw(ref g, O, sz);
+            b.Draw(ref g, O, sz);
+            c.Draw(ref g, O, sz);
 
             this.BackgroundImage = bmp;
             this.Refresh();
+        }
+
+        private void button2_Click(object sender, EventArgs e)
+        {
+            if (timer1.Enabled)
+            {
+                timer1.Enabled = false;
+                button2.Text = "Continue";
+            }
+            else
+            {
+                timer1.Enabled = true;
+                button2.Text = "Pause";
+            }
+        }
+
+        private void checkBox1_CheckedChanged(object sender, EventArgs e)
+        {
+            if (checkBox1.Checked)
+                sz = DEFAULT_SIZE;
+            else
+                sz = 0;
         }
 
         sealed class VisibleBall : Ball
@@ -92,19 +126,43 @@ namespace CollisionSimulation
                 Col=BallColor;
             }
 
-            public void Draw(ref Graphics Gra, Double ShiftX, Double ShiftY)
+            public void Draw(ref Graphics Gra, Double ShiftX, Double ShiftY, Double InfoSize)
             {
                 SolidBrush brsh = new SolidBrush(Col);
                 Gra.FillEllipse(brsh, (float)(Pos.x - R + ShiftX), (float)(Pos.y - R + ShiftY), (float)(2 * R), (float)(2 * R));
+                if (InfoSize != 0)
+                {
+                    const Double FontSizeFactor = 4, LineSizeFactor = 3;
+                    brsh.Color = Color.Black;
+                    Pen p = new Pen(brsh, 1);
+                    PointF PtCentre =  new PointF((float)(Pos.x + ShiftX), (float)(Pos.y + ShiftY));
+                    Gra.DrawString(String.Format("M={0:f}, R={1:f}\nPos=({2:f},{3:f})\nV=({4:f},{5:f})",Mass,R,Pos.x,Pos.y,GetVx(),GetVy ()),
+                        new Font(FontFamily.GenericSansSerif, (float)(FontSizeFactor * InfoSize)),
+                        brsh, PointF.Add(PtCentre, new SizeF((float)R, (float)R)));
+                    Gra.DrawLine(p, PtCentre, new PointF()
+                    {
+                        X = (float)(PtCentre.X + GetVx() * LineSizeFactor),
+                        Y = (float)(PtCentre.Y + GetVy() * LineSizeFactor)
+                    });
+                    p.Dispose();
+                }
                 brsh.Dispose();
+            }
+            public void Draw(ref Graphics Gra, Double ShiftX, Double ShiftY)
+            {
+                Draw(ref Gra, ShiftX, ShiftY, 0);
             }
             public void Draw(ref Graphics Gra, Position OriginPoint)
             {
-                Draw(ref Gra, OriginPoint.x, OriginPoint.y);
+                Draw(ref Gra, OriginPoint.x, OriginPoint.y, 0);
+            }
+            public void Draw(ref Graphics Gra, Position OriginPoint, Double InfoSize)
+            {
+                Draw(ref Gra, OriginPoint.x, OriginPoint.y, InfoSize);
             }
             public void Draw(ref Graphics Gra)
             {
-                Draw(ref Gra, 0, 0);
+                Draw(ref Gra, 0, 0, 0);
             }
 
             public Ball Convert()
@@ -147,5 +205,6 @@ namespace CollisionSimulation
                 return Calc.ChkCollision(tmp1, tmp2);
             }
         }
+
     }
 }
