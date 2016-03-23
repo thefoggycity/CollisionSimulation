@@ -17,7 +17,7 @@ namespace CollisionSimulation
                         DEFAULT_ORI_X = 200,
                         DEFAULT_ORI_Y = 100;
 
-        VisibleBall a, b, c;
+        VisibleBall[] balls;
         Double tr, sz;
         Ball.Position O;
         Bitmap bmp;
@@ -34,9 +34,12 @@ namespace CollisionSimulation
 
         private void button1_Click(object sender, EventArgs e)
         {
-            a = new VisibleBall(0.5, 14.15, Color.MediumVioletRed, 3, 55, 15, -7);
-            b = new VisibleBall(1, 14.15, Color.Lime, 80, 0, -12, 5);
-            c = new VisibleBall(0.8, 14.15, Color.Aquamarine, 10, -5, 20, 10);
+            balls = new VisibleBall[]
+            {
+                new VisibleBall(0.5, 14.15, Color.MediumVioletRed, 3, 55, 15, -7),
+                new VisibleBall(1, 14.15, Color.Lime, 80, 0, -12, 5),
+                new VisibleBall(0.8, 14.15, Color.Aquamarine, 10, -5, 20, 10)
+            };
 
             O.x = DEFAULT_ORI_X;
             O.y = DEFAULT_ORI_Y;
@@ -58,22 +61,19 @@ namespace CollisionSimulation
 
         private void timer1_Tick(object sender, EventArgs e)
         {
-            a.Move(tr);
-            b.Move(tr);
-            c.Move(tr);
-            if (VisibleBall.ChkCollision(a, b) <= 0)
-                VisibleBall.Collide(ref a, ref b, tr);
-            if (VisibleBall.ChkCollision(a, c) <= 0)
-                VisibleBall.Collide(ref a, ref c, tr);
-            if (VisibleBall.ChkCollision(b, c) <= 0)
-                VisibleBall.Collide(ref b, ref c, tr);
+            foreach (VisibleBall b in balls)
+                b.Move(tr);
 
+            for (int i = 0; i < balls.GetUpperBound(0); i++)
+                for (int j = i + 1; j <= balls.GetUpperBound(0); j++)
+                    if (VisibleBall.ChkCollision(balls[i], balls[j]) <= 0)
+                        VisibleBall.Collide(ref balls[i], ref balls[j], tr);
 
             bmp = new Bitmap(this.Width, this.Height);
             g = Graphics.FromImage(bmp);
-            a.Draw(ref g, O, sz);
-            b.Draw(ref g, O, sz);
-            c.Draw(ref g, O, sz);
+
+            foreach(VisibleBall b in balls)
+                b.Draw(ref g, O, sz);
 
             this.BackgroundImage = bmp;
             this.Refresh();
