@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace CollisionSimulation
 {
-    class Ball
+    public class Ball
     {
         public Double Mass, R;
         public struct Position
