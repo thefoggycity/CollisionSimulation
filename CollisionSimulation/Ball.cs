@@ -277,7 +277,7 @@ namespace CollisionSimulation
                 {
                     Imp.y = 2 * (Ball2.Mass * Ball1.P.y - Ball1.Mass * Ball2.P.y) / (Ball1.Mass + Ball2.Mass);
                 }
-                Ball1.P = Vector.Add(Ball1.P, Vector.Multiple(Imp, -1));
+                Ball1.P = Vector.Subtract(Ball1.P, Imp);
                 Ball2.P = Vector.Add(Ball2.P, Imp);
 
                 if (TimeRate != 0 && Correction > 0)
@@ -290,6 +290,14 @@ namespace CollisionSimulation
             public static Momentum Collide(ref Ball Ball1, ref Ball Ball2)
             {
                 return Collide(ref Ball1, ref Ball2, 0);
+            }
+
+            public static Momentum Bounce(ref Ball TargetBall, Momentum WallDirection)
+            {
+                Momentum WallMeta = Vector.GetMeta(WallDirection);
+                Momentum imp = Vector.Subtract(Vector.Multiple(WallMeta, Vector.DotMultiple(TargetBall.P, WallMeta)), TargetBall.P);
+                TargetBall.P = Vector.Add(TargetBall.P, Vector.Multiple(imp, 2));
+                return imp;
             }
 
             static class Vector
@@ -314,15 +322,27 @@ namespace CollisionSimulation
                 {
                     return new Position(pos.x + v.x, pos.y + v.y);
                 }
+                public static Momentum Subtract(Momentum p1, Momentum p2)
+                {
+                    return new Momentum(p1.x - p2.x, p1.y - p2.y);
+                }
+                public static Position Subtract(Position pos, Velocity v)
+                {
+                    return new Position(pos.x - v.x, pos.y - v.y);
+                }
+                public static Double DotMultiple(Momentum p1, Momentum p2)
+                {
+                    return (p1.x * p2.x + p1.y * p2.y);
+                }
                 public static Double Mode(Momentum p)
                 {
                     return Math.Sqrt(Math.Pow(p.x, 2) + Math.Pow(p.y, 2));
                 }
-                //public static Momentum GetMeta(Momentum p)
-                //{
-                //    Double l = Mode(p);
-                //    return new Momentum(p.x / l, p.y / l);
-                //}
+                public static Momentum GetMeta(Momentum p)
+                {
+                    Double l = Mode(p);
+                    return new Momentum(p.x / l, p.y / l);
+                }
             }
         }
     }

@@ -61,8 +61,14 @@ namespace CollisionSimulation
 
         private void timer1_Tick(object sender, EventArgs e)
         {
-            foreach (VisibleBall b in balls)
-                b.Move(tr);
+            for (int i = 0; i < balls.GetLength(0); i++)
+            {
+                balls[i].Move(tr);
+                if (balls[i].Pos.x - balls[i].R <= 0 || balls[i].Pos.x + balls[i].R >= this.Width)
+                    VisibleBall.Bounce(ref balls[i], new Ball.Momentum(0, 2));
+                if (balls[i].Pos.y - balls[i].R <= 0 || balls[i].Pos.y + balls[i].R >= this.Height)
+                    VisibleBall.Bounce(ref balls[i], new Ball.Momentum(2, 0));
+            }
 
             for (int i = 0; i < balls.GetUpperBound(0); i++)
                 for (int j = i + 1; j <= balls.GetUpperBound(0); j++)
@@ -187,7 +193,6 @@ namespace CollisionSimulation
                 Ball1.SetValue(tmp1);
                 Ball2.SetValue(tmp2);
                 return imp;
-
             }
             public static Momentum Collide(ref VisibleBall Ball1, ref VisibleBall Ball2)
             {
@@ -203,6 +208,13 @@ namespace CollisionSimulation
                 Ball tmp1 = Ball1.Convert(),
                     tmp2 = Ball2.Convert();
                 return Calc.ChkCollision(tmp1, tmp2);
+            }
+            public static Momentum Bounce(ref VisibleBall TargetBall, Momentum WallDirection)
+            {
+                Ball tmp = TargetBall.Convert();
+                Momentum imp = Calc.Bounce(ref tmp, WallDirection);
+                TargetBall.SetValue(tmp);
+                return imp;
             }
         }
 
