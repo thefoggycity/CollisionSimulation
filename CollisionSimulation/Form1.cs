@@ -107,6 +107,11 @@ namespace CollisionSimulation
                 sz = 0;
         }
 
+        private void PlotCoordinate(ref Graphics Gra, Ball.Position Origin, Color Clr)
+        {
+            
+        }
+
         sealed class VisibleBall : Ball
         {
             Color Col;
