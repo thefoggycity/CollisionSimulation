@@ -14,8 +14,8 @@ namespace CollisionSimulation
     {
         const Double    DEFAULT_SIZE = 2,
                         DEFAULT_TIMERATE = 0.2,
-                        DEFAULT_ORI_X = 200,
-                        DEFAULT_ORI_Y = 100;
+                        DEFAULT_ORI_X = 250,
+                        DEFAULT_ORI_Y = 180;
 
         VisibleBall[] balls;
         Double tr, sz;
@@ -36,9 +36,11 @@ namespace CollisionSimulation
         {
             balls = new VisibleBall[]
             {
-                new VisibleBall(0.5, 14.15, Color.MediumVioletRed, 3, 55, 15, -7),
-                new VisibleBall(1, 14.15, Color.Lime, 80, 0, -12, 5),
-                new VisibleBall(0.8, 14.15, Color.Aquamarine, 10, -5, 20, 10)
+                new VisibleBall(0.5, 12, Color.MediumVioletRed, 3, 55, 15, -7),
+                new VisibleBall(1, 18, Color.Lime, 80, 0, -12, 5),
+                new VisibleBall(0.8, 14, Color.Aquamarine, 10, -5, 20, 10),
+                new VisibleBall(1, 18, Color.Lime, -20, -5, 6, 12),
+                new VisibleBall(0.5, 12, Color.MediumVioletRed, -50, 20, 15, -7),
             };
 
             O.x = DEFAULT_ORI_X;
@@ -50,6 +52,9 @@ namespace CollisionSimulation
             else
                 sz = 0;
 
+            bmp = new Bitmap(this.Width, this.Height);
+            g = Graphics.FromImage(bmp);
+            g.CompositingQuality = System.Drawing.Drawing2D.CompositingQuality.HighSpeed;
             this.BackgroundImageLayout = ImageLayout.Center;
             this.BackgroundImage = bmp;
 
@@ -64,10 +69,10 @@ namespace CollisionSimulation
             for (int i = 0; i < balls.GetLength(0); i++)
             {
                 balls[i].Move(tr);
-                if (balls[i].Pos.x - balls[i].R <= 0 || balls[i].Pos.x + balls[i].R >= this.Width)
-                    VisibleBall.Bounce(ref balls[i], new Ball.Momentum(0, 2));
-                if (balls[i].Pos.y - balls[i].R <= 0 || balls[i].Pos.y + balls[i].R >= this.Height)
-                    VisibleBall.Bounce(ref balls[i], new Ball.Momentum(2, 0));
+                if (balls[i].Pos.x - balls[i].R + O.x <= 0 || balls[i].Pos.x + balls[i].R + O.x >= this.Width)
+                    VisibleBall.Bounce(ref balls[i], new Ball.Vector(0, 1, Ball.Vector.Type.Momentum));
+                if (balls[i].Pos.y - balls[i].R + O.y <= 0 || balls[i].Pos.y + balls[i].R + O.y >= this.Height)
+                    VisibleBall.Bounce(ref balls[i], new Ball.Vector(1, 0, Ball.Vector.Type.Momentum));
             }
 
             for (int i = 0; i < balls.GetUpperBound(0); i++)
@@ -75,13 +80,12 @@ namespace CollisionSimulation
                     if (VisibleBall.ChkCollision(balls[i], balls[j]) <= 0)
                         VisibleBall.Collide(ref balls[i], ref balls[j], tr);
 
-            bmp = new Bitmap(this.Width, this.Height);
-            g = Graphics.FromImage(bmp);
+            g.Clear(Color.Transparent);
 
+            PlotCoordinate(ref g, O, Color.Black);
             foreach(VisibleBall b in balls)
                 b.Draw(ref g, O, sz);
-
-            this.BackgroundImage = bmp;
+            
             this.Refresh();
         }
 
@@ -109,20 +113,21 @@ namespace CollisionSimulation
 
         private void PlotCoordinate(ref Graphics Gra, Ball.Position Origin, Color Clr)
         {
-            
+            Pen p = new Pen (Clr, 1);
+            SolidBrush b = new SolidBrush(Clr);
+            Gra.DrawLine(p, new Point(0, (int)Origin.y), new Point(this.Width, (int)Origin.y));
+            Gra.DrawLine(p, new Point((int)Origin.x, 0), new Point((int)Origin.x, this.Height));
+            Gra.DrawString(String.Format("({0},{1})", MousePosition.X, MousePosition.Y), new Font(FontFamily.GenericMonospace, 8), b, 0, 0);
+            p.Dispose();
+            b.Dispose();
         }
 
         sealed class VisibleBall : Ball
         {
             Color Col;
 
-            public VisibleBall(Double BallMass, Double BallRadius, Color BallColor, Position BallPosition, Momentum BallMomentum)
-                : base (BallMass, BallRadius, BallPosition, BallMomentum)
-            {
-                Col = BallColor;
-            }
-            public VisibleBall(Double BallMass, Double BallRadius, Color BallColor, Position BallPosition, Velocity BallVelocity)
-                : base(BallMass, BallRadius, BallPosition, Calc.GetMomentumByVelocity(BallMass, BallVelocity))
+            public VisibleBall(Double BallMass, Double BallRadius, Color BallColor, Position BallPosition, Vector BallMomentumOrVelocity)
+                : base (BallMass, BallRadius, BallPosition, BallMomentumOrVelocity)
             {
                 Col = BallColor;
             }
@@ -190,20 +195,20 @@ namespace CollisionSimulation
                 return new VisibleBall(TargetBall, BallColor);
             }
 
-            public static Momentum Collide(ref VisibleBall Ball1, ref VisibleBall Ball2, Double TimeRate)
+            public static Vector Collide(ref VisibleBall Ball1, ref VisibleBall Ball2, Double TimeRate)
             {
                 Ball tmp1 = Ball1.Convert(),
                     tmp2 = Ball2.Convert();
-                Momentum imp = Calc.Collide(ref tmp1, ref tmp2, TimeRate);
+                Vector imp = Calc.Collide(ref tmp1, ref tmp2, TimeRate);
                 Ball1.SetValue(tmp1);
                 Ball2.SetValue(tmp2);
                 return imp;
             }
-            public static Momentum Collide(ref VisibleBall Ball1, ref VisibleBall Ball2)
+            public static Vector Collide(ref VisibleBall Ball1, ref VisibleBall Ball2)
             {
                 Ball tmp1 = Ball1.Convert(),
                     tmp2 = Ball2.Convert();
-                Momentum imp = Calc.Collide(ref tmp1, ref tmp2);
+                Vector imp = Calc.Collide(ref tmp1, ref tmp2);
                 Ball1.SetValue(tmp1);
                 Ball2.SetValue(tmp2);
                 return imp;
@@ -214,10 +219,10 @@ namespace CollisionSimulation
                     tmp2 = Ball2.Convert();
                 return Calc.ChkCollision(tmp1, tmp2);
             }
-            public static Momentum Bounce(ref VisibleBall TargetBall, Momentum WallDirection)
+            public static Vector Bounce(ref VisibleBall TargetBall, Vector WallDirection)
             {
                 Ball tmp = TargetBall.Convert();
-                Momentum imp = Calc.Bounce(ref tmp, WallDirection);
+                Vector imp = Calc.Bounce(ref tmp, WallDirection);
                 TargetBall.SetValue(tmp);
                 return imp;
             }

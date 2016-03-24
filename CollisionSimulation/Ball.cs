@@ -20,60 +20,51 @@ namespace CollisionSimulation
             }
         }
         public Position Pos;
-        public struct Momentum
+        public struct Vector
         {
+            public enum Type
+            {
+                Momentum,
+                Velocity
+            }
             public Double x;
             public Double y;
-            public Momentum(Double X, Double Y)
+            public Type ValType;
+            public Vector(Double X, Double Y, Type ValueType)
             {
                 x = X;
                 y = Y;
+                ValType = ValueType;
             }
         }
-        public Momentum P;
-        public struct Velocity
-        {
-            public Double x;
-            public Double y;
-            public Velocity(Double X, Double Y)
-            {
-                x = X;
-                y = Y;
-            }
-        }
+        public Vector P;
 
-
-        public Ball(Double BallMass, Double BallRadius, Position BallPosition, Momentum BallMomentum)
+        public Ball(Double BallMass, Double BallRadius, Position BallPosition, Vector BallMomentumOrVelocity)
         {
             Mass = BallMass;
             R = BallRadius;
             Pos = BallPosition;
-            P = BallMomentum;
-        }
-        public Ball(Double BallMass, Double BallRadius, Position BallPosition, Velocity BallVelocity)
-        {
-            Mass = BallMass;
-            R = BallRadius;
-            Pos = BallPosition;
-            P = Calc.GetMomentumByVelocity(Mass, BallVelocity);
+            if (BallMomentumOrVelocity.ValType != Vector.Type.Momentum)
+            {
+                BallMomentumOrVelocity.x *= BallMass;
+                BallMomentumOrVelocity.y *= BallMass;
+                BallMomentumOrVelocity.ValType = Vector.Type.Momentum;
+            }
+            P = BallMomentumOrVelocity;
         }
         public Ball(Double BallMass, Double BallRadius, Double PosX, Double PosY, Double MomentumX, Double MomentumY)
         {
-            Position BallPosition = new Position(PosX, PosY);
-            Momentum BallMomentum = new Momentum(MomentumX, MomentumY);
             Mass = BallMass;
             R = BallRadius;
-            Pos = BallPosition;
-            P = BallMomentum;
+            Pos = new Position(PosX, PosY);
+            P = new Vector(MomentumX, MomentumY, Vector.Type.Momentum);
         }
         public Ball(Double BallMass, Double BallRadius, Double PosX, Double PosY)
         {
-            Position BallPosition = new Position(PosX, PosY);
-            Momentum BallMomentum = new Momentum(0, 0);
             Mass = BallMass;
             R = BallRadius;
-            Pos = BallPosition;
-            P = BallMomentum;
+            Pos = new Position(PosX, PosY);
+            P = new Vector(0, 0, Vector.Type.Momentum);
         }
         public Ball(Ball BallToCopy)
         {
@@ -100,9 +91,10 @@ namespace CollisionSimulation
             P.x = Vx * Mass;
             P.y = Vy * Mass;
         }
-        public void SetMomentumByVelocity(Velocity BallVelocity)
+        public void SetMomentumByVelocity(Vector BallVelocity)
         {
-            P = Calc.GetMomentumByVelocity(this.Mass, BallVelocity);
+            if (BallVelocity.ValType == Vector.Type.Velocity)
+                P = Calc.GetMomentumByVelocity(this.Mass, BallVelocity);
         }
         public void SetPosition(Double BallPosX, Double BallPosY)
         {
@@ -115,14 +107,14 @@ namespace CollisionSimulation
             Pos.y += (GetVy() * TimeRate);
         }
 
-        public Momentum CollideWith(ref Ball TargetBall, Double TimeRate)
+        public Vector CollideWith(ref Ball TargetBall, Double TimeRate)
         {
             Ball tmp = new Ball(this);
-            Momentum imp = Calc.Collide(ref tmp, ref TargetBall,TimeRate );
+            Vector imp = Calc.Collide(ref tmp, ref TargetBall,TimeRate );
             SetValue(tmp);
             return imp;
         }
-        public Momentum CollideWith(ref Ball TargetBall)
+        public Vector CollideWith(ref Ball TargetBall)
         {
             return CollideWith(ref TargetBall, 0);
         }
@@ -136,9 +128,9 @@ namespace CollisionSimulation
         {
             return Calc.GetResultantVelocity(this);
         }
-        public Velocity GetVelocity()
+        public Vector GetVelocity()
         {
-            return new Velocity(this.GetVx(), this.GetVy());
+            return new Vector(this.GetVx(), this.GetVy(), Vector.Type.Velocity);
         }
         public Double GetVx()
         {
@@ -176,36 +168,36 @@ namespace CollisionSimulation
                 return GetDistance(Ball1.Pos, Ball2.Pos);
             }
 
-            public static Double GetResultantMomentum(Momentum BallP)
+            public static Double GetResultantMomentum(Vector BallP)
             {
-                return Vector.Mode(BallP);
+                return VectorUtil.Mode(BallP);
             }
             public static Double GetResultantMomentum(Ball TargetBall)
             {
-                return Vector.Mode(TargetBall.P);
+                return VectorUtil.Mode(TargetBall.P);
             }
 
-            public static Momentum GetMomentumByVelocity(Double BallMass, Double Vx, Double Vy)
+            public static Vector GetMomentumByVelocity(Double BallMass, Double Vx, Double Vy)
             {
-                return new Momentum(BallMass * Vx, BallMass * Vy);
+                return new Vector(BallMass * Vx, BallMass * Vy, Vector.Type.Momentum);
             }
-            public static Momentum GetMomentumByVelocity(Double BallMass, Velocity BallVelocity)
+            public static Vector GetMomentumByVelocity(Double BallMass, Vector BallVelocity)
             {
-                return new Momentum(BallMass * BallVelocity.x, BallMass * BallVelocity.y);
+                    return new Vector(BallMass * BallVelocity.x, BallMass * BallVelocity.y, Vector.Type.Momentum);
             }
 
             public static Double GetResultantVelocity(Ball TargetBall)
             {
-                return Vector.Mode(TargetBall.P) / TargetBall.Mass;
+                return VectorUtil.Mode(TargetBall.P) / TargetBall.Mass;
             }
 
-            public static Velocity GetVelocity(Ball TargetBall)
+            public static Vector GetVelocity(Ball TargetBall)
             {
-                return new Velocity(TargetBall.P.x / TargetBall.Mass, TargetBall.P.y / TargetBall.Mass);
+                return new Vector(TargetBall.P.x / TargetBall.Mass, TargetBall.P.y / TargetBall.Mass, Vector.Type.Velocity);
             }
-            public static Velocity GetVelocity(Double BallMass, Momentum BallP)
+            public static Vector GetVelocity(Double BallMass, Vector BallP)
             {
-                return new Velocity(BallP.x / BallMass, BallP.y / BallMass);
+                return new Vector(BallP.x / BallMass, BallP.y / BallMass, Vector.Type.Velocity);
             }
 
             public static Double ChkCollision(Ball Ball1, Ball Ball2)
@@ -220,41 +212,41 @@ namespace CollisionSimulation
                 Double d = ChkCollision(Ball1, Ball2);
                 if (d > 0)
                     return -1;
-                Velocity v1 = new Velocity
+                Vector v1 = new Vector
                 {
                     x = -TimeRate * Ball1.GetVx() / ACCURACY,
                     y = -TimeRate * Ball1.GetVy() / ACCURACY,
                 };
-                Velocity v2 = new Velocity
+                Vector v2 = new Vector
                 {
                     x = -TimeRate * Ball2.GetVx() / ACCURACY,
                     y = -TimeRate * Ball2.GetVy() / ACCURACY,
                 };
                 for (i = 0; i < ACCURACY; i++)
                 {
-                    Ball1.Pos = Vector.Add(Ball1.Pos, v1);
-                    Ball2.Pos = Vector.Add(Ball2.Pos, v2);
+                    Ball1.Pos = VectorUtil.Add(Ball1.Pos, v1);
+                    Ball2.Pos = VectorUtil.Add(Ball2.Pos, v2);
                     if (ChkCollision(Ball1, Ball2) >= 0)
                     {
-                        Ball1.Pos = Vector.Add(Ball1.Pos, Vector.Multiple(v1, -1));
-                        Ball2.Pos = Vector.Add(Ball2.Pos, Vector.Multiple(v2, -1));
+                        Ball1.Pos = VectorUtil.Add(Ball1.Pos, VectorUtil.Multiple(v1, -1));
+                        Ball2.Pos = VectorUtil.Add(Ball2.Pos, VectorUtil.Multiple(v2, -1));
                         return (Single)(i * 1.0 / ACCURACY);
                     }
                 }
                 return -1;
             }
 
-            public static Momentum Collide(ref Ball Ball1, ref Ball Ball2, Double TimeRate)
+            public static Vector Collide(ref Ball Ball1, ref Ball Ball2, Double TimeRate)
             {
                 Double d = ChkCollision(Ball1, Ball2);
                 Single Correction = 0;
                 Double k;
                 if (d > 0)
-                    return new Momentum(0, 0);
+                    return new Vector(0, 0,Vector.Type.Momentum);
                 if (TimeRate != 0)
                     Correction = CorrectPosition(ref Ball1, ref Ball2, TimeRate);
 
-                Momentum Imp = new Momentum(Ball2.Pos.x - Ball1.Pos.x, Ball2.Pos.y - Ball1.Pos.y);
+                Vector Imp = new Vector(Ball2.Pos.x - Ball1.Pos.x, Ball2.Pos.y - Ball1.Pos.y, Vector.Type.Momentum);
 
                 if (Imp.x != 0)
                 {
@@ -277,8 +269,8 @@ namespace CollisionSimulation
                 {
                     Imp.y = 2 * (Ball2.Mass * Ball1.P.y - Ball1.Mass * Ball2.P.y) / (Ball1.Mass + Ball2.Mass);
                 }
-                Ball1.P = Vector.Subtract(Ball1.P, Imp);
-                Ball2.P = Vector.Add(Ball2.P, Imp);
+                Ball1.P = VectorUtil.Subtract(Ball1.P, Imp);
+                Ball2.P = VectorUtil.Add(Ball2.P, Imp);
 
                 if (TimeRate != 0 && Correction > 0)
                 {
@@ -287,61 +279,55 @@ namespace CollisionSimulation
                 }
                 return Imp;
             }
-            public static Momentum Collide(ref Ball Ball1, ref Ball Ball2)
+            public static Vector Collide(ref Ball Ball1, ref Ball Ball2)
             {
                 return Collide(ref Ball1, ref Ball2, 0);
             }
 
-            public static Momentum Bounce(ref Ball TargetBall, Momentum WallDirection)
+            public static Vector Bounce(ref Ball TargetBall, Vector WallDirection)
             {
-                Momentum WallMeta = Vector.GetMeta(WallDirection);
-                Momentum imp = Vector.Subtract(Vector.Multiple(WallMeta, Vector.DotMultiple(TargetBall.P, WallMeta)), TargetBall.P);
-                TargetBall.P = Vector.Add(TargetBall.P, Vector.Multiple(imp, 2));
+                Vector WallMeta = VectorUtil.GetMeta(WallDirection);
+                Vector imp = VectorUtil.Subtract(VectorUtil.Multiple(WallMeta, VectorUtil.DotMultiple(TargetBall.P, WallMeta)), TargetBall.P);
+                TargetBall.P = VectorUtil.Add(TargetBall.P, VectorUtil.Multiple(imp, 2));
                 return imp;
             }
 
-            static class Vector
+            static class VectorUtil
             {
-                public static Momentum Multiple(Momentum p, Double Multipler)
+                public static Vector Multiple(Vector Vec, Double Multipler)
                 {
-                    p.x *= Multipler;
-                    p.y *= Multipler;
-                    return p;
+                    Vec.x *= Multipler;
+                    Vec.y *= Multipler;
+                    return Vec;
                 }
-                public static Velocity Multiple(Velocity v, Double Multipler)
+                public static Vector Add(Vector Vec1, Vector Vec2)
                 {
-                    v.x *= Multipler;
-                    v.y *= Multipler;
-                    return v;
+                    return new Vector(Vec1.x + Vec2.x, Vec1.y + Vec2.y, Vec1.ValType);
                 }
-                public static Momentum Add(Momentum p1, Momentum p2)
+                public static Position Add(Position  pos, Vector Vec)
                 {
-                    return new Momentum(p1.x + p2.x, p1.y + p2.y);
+                    return new Position(pos.x + Vec.x, pos.y + Vec.y);
                 }
-                public static Position Add(Position  pos, Velocity v)
+                public static Vector Subtract(Vector Vec1, Vector Vec2)
                 {
-                    return new Position(pos.x + v.x, pos.y + v.y);
+                    return new Vector(Vec1.x - Vec2.x, Vec1.y - Vec2.y, Vec1.ValType);
                 }
-                public static Momentum Subtract(Momentum p1, Momentum p2)
+                public static Position Subtract(Position pos, Vector Vec)
                 {
-                    return new Momentum(p1.x - p2.x, p1.y - p2.y);
+                    return new Position(pos.x - Vec.x, pos.y - Vec.y);
                 }
-                public static Position Subtract(Position pos, Velocity v)
-                {
-                    return new Position(pos.x - v.x, pos.y - v.y);
-                }
-                public static Double DotMultiple(Momentum p1, Momentum p2)
+                public static Double DotMultiple(Vector p1, Vector p2)
                 {
                     return (p1.x * p2.x + p1.y * p2.y);
                 }
-                public static Double Mode(Momentum p)
+                public static Double Mode(Vector p)
                 {
                     return Math.Sqrt(Math.Pow(p.x, 2) + Math.Pow(p.y, 2));
                 }
-                public static Momentum GetMeta(Momentum p)
+                public static Vector GetMeta(Vector p)
                 {
                     Double l = Mode(p);
-                    return new Momentum(p.x / l, p.y / l);
+                    return new Vector(p.x / l, p.y / l, p.ValType);
                 }
             }
         }
