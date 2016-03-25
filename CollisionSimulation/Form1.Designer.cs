@@ -87,6 +87,7 @@
             this.Name = "Form1";
             this.Text = "CollisionSimulation";
             this.Load += new System.EventHandler(this.Form1_Load);
+            this.ResizeEnd += new System.EventHandler(this.Form1_ResizeEnd);
             this.ResumeLayout(false);
             this.PerformLayout();
 

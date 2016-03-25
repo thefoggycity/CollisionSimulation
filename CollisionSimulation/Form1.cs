@@ -25,6 +25,7 @@ namespace CollisionSimulation
         public Boolean Coor;
 
         Double sz;
+        Boolean InitializedFlag = false;
         Bitmap bmp;
         Graphics g;
 
@@ -48,6 +49,27 @@ namespace CollisionSimulation
             tr = DEFAULT_TIMERATE;
             Coor = DEFAULT_COOR;
             infosz = DEFAULT_SIZE;
+
+            this.BackgroundImageLayout = ImageLayout.None;
+            bmp = new Bitmap(this.Width, this.Height);
+            this.BackgroundImage = bmp;
+        }
+
+        private void Form1_ResizeEnd(object sender, EventArgs e)
+        {
+            if (InitializedFlag)
+            {
+                bmp = new Bitmap(this.Width, this.Height);
+                g = Graphics.FromImage(bmp);
+                this.BackgroundImage = bmp;
+                g.CompositingQuality = System.Drawing.Drawing2D.CompositingQuality.HighSpeed;
+
+                PlotCoordinate(ref g, O, Color.Black);
+                foreach (VisibleBall b in balls)
+                    b.Draw(ref g, O, sz);
+
+                this.Refresh();
+            }
         }
 
         private void button1_Click(object sender, EventArgs e)
@@ -66,19 +88,19 @@ namespace CollisionSimulation
 
             DialogResult r = IniBall.ShowDialog(this);
             if (r != DialogResult.OK)
+            {
+                timer1.Enabled = true;
                 return;
-
+            }
+            InitializedFlag = true;
 
             if (checkBox1.Checked)
                 sz = infosz;
             else
                 sz = 0;
 
-            bmp = new Bitmap(this.Width, this.Height);
             g = Graphics.FromImage(bmp);
             g.CompositingQuality = System.Drawing.Drawing2D.CompositingQuality.HighSpeed;
-            this.BackgroundImageLayout = ImageLayout.Center;
-            this.BackgroundImage = bmp;
 
             button1.Text = "Set Balls";
             button2.Text = "Pause";
@@ -151,9 +173,16 @@ namespace CollisionSimulation
             SolidBrush b = new SolidBrush(Clr);
             Gra.DrawLine(p, new Point(0, (int)Origin.y), new Point(this.Width, (int)Origin.y));
             Gra.DrawLine(p, new Point((int)Origin.x, 0), new Point((int)Origin.x, this.Height));
-            Gra.DrawString(String.Format("({0},{1})", MousePosition.X, MousePosition.Y), new Font(FontFamily.GenericMonospace, 8), b, 0, 0);
+            if (sz != 0)
+                Gra.DrawString(String.Format("({0},{1})", GetMouseRelativePosition().X, GetMouseRelativePosition().Y),
+                    new Font(FontFamily.GenericMonospace, (float)(5 * sz)), b, 0, 0);
             p.Dispose();
             b.Dispose();
+        }
+
+        private Point GetMouseRelativePosition()
+        {
+            return new Point(this.PointToClient(MousePosition).X - (int)O.x, this.PointToClient(MousePosition).Y - (int)O.y);
         }
 
     }

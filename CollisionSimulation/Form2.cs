@@ -18,8 +18,6 @@ namespace CollisionSimulation
         public Size GroundSize;
         public Boolean Coor;
 
-        
-
         Bitmap BallPreview;
         Graphics g;
 
