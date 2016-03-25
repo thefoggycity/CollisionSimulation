@@ -86,7 +86,7 @@
             this.Name = "Form1";
             this.Text = "CollisionSimulation";
             this.Load += new System.EventHandler(this.Form1_Load);
-            this.ResizeEnd += new System.EventHandler(this.Form1_ResizeEnd);
+            this.Resize += new System.EventHandler(this.Form1_Resize);
             this.DoubleClick += new System.EventHandler(this.Form1_DoubleClick);
             this.MouseDown += new System.Windows.Forms.MouseEventHandler(this.Form1_MouseDown);
             this.MouseHover += new System.EventHandler(this.Form1_MouseHover);

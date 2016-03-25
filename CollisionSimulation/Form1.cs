@@ -56,15 +56,15 @@ namespace CollisionSimulation
             this.BackgroundImage = bmp;
         }
 
-        private void Form1_ResizeEnd(object sender, EventArgs e)
+        private void Form1_Resize(object sender, EventArgs e)
         {
+            bmp = new Bitmap(this.Width, this.Height);
+            g = Graphics.FromImage(bmp);
+            this.BackgroundImage = bmp;
+            g.CompositingQuality = System.Drawing.Drawing2D.CompositingQuality.HighSpeed;
+
             if (InitializedFlag)
             {
-                bmp = new Bitmap(this.Width, this.Height);
-                g = Graphics.FromImage(bmp);
-                this.BackgroundImage = bmp;
-                g.CompositingQuality = System.Drawing.Drawing2D.CompositingQuality.HighSpeed;
-
                 PlotCoordinate(ref g, O, Color.Black);
                 foreach (VisibleBall b in balls)
                     b.Draw(ref g, O, sz);
