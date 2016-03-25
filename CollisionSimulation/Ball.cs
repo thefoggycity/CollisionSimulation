@@ -132,6 +132,10 @@ namespace CollisionSimulation
         {
             return new Vector(this.GetVx(), this.GetVy(), Vector.Type.Velocity);
         }
+        public Double GetEnergy()
+        {
+            return Calc.GetEnergy(this);
+        }
         public Double GetVx()
         {
             return P.x / Mass;
@@ -198,6 +202,15 @@ namespace CollisionSimulation
             public static Vector GetVelocity(Double BallMass, Vector BallP)
             {
                 return new Vector(BallP.x / BallMass, BallP.y / BallMass, Vector.Type.Velocity);
+            }
+
+            public static Double GetEnergy(Double BallMass, Vector BallVelocity)
+            {
+                return (Math.Pow(VectorUtil.Mode(BallVelocity), 2) * BallMass) / 2;
+            }
+            public static Double GetEnergy(Ball TargetBall)
+            {
+                return GetEnergy(TargetBall.Mass, TargetBall.GetVelocity());
             }
 
             public static Double ChkCollision(Ball Ball1, Ball Ball2)

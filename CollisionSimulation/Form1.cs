@@ -26,6 +26,7 @@ namespace CollisionSimulation
 
         Double sz;
         Boolean InitializedFlag = false;
+        ToolTip ttip = new ToolTip();
         Bitmap bmp;
         Graphics g;
 
@@ -69,6 +70,47 @@ namespace CollisionSimulation
                     b.Draw(ref g, O, sz);
 
                 this.Refresh();
+            }
+        }
+
+        void Form1_MouseMove(object sender, MouseEventArgs e)
+        {
+            if (InitializedFlag && sz != 0 && !timer1.Enabled)
+            {
+                bmp = new Bitmap(this.Width, this.Height);
+                g = Graphics.FromImage(bmp);
+                this.BackgroundImage = bmp;
+                g.CompositingQuality = System.Drawing.Drawing2D.CompositingQuality.HighSpeed;
+
+                PlotCoordinate(ref g, O, Color.Black);
+                foreach (VisibleBall b in balls)
+                    b.Draw(ref g, O, sz);
+
+                this.Refresh();
+            }
+        }
+
+        private void Form1_MouseHover(object sender, EventArgs e)
+        {
+            if (InitializedFlag && !timer1.Enabled)
+            {
+                ShowAttribute(true);
+            }
+        }
+
+        private void Form1_DoubleClick(object sender, EventArgs e)
+        {
+            if (InitializedFlag)
+            {
+                ShowAttribute(false);
+            }
+        }
+
+        private void Form1_MouseDown(object sender, MouseEventArgs e)
+        {
+            if (InitializedFlag)
+            {
+                ShowAttribute(true);
             }
         }
 
@@ -178,6 +220,38 @@ namespace CollisionSimulation
                     new Font(FontFamily.GenericMonospace, (float)(5 * sz)), b, 0, 0);
             p.Dispose();
             b.Dispose();
+        }
+
+        private void ShowAttribute(Boolean SpecificBall)
+        {
+            if (SpecificBall)
+            {
+                String BallPointed = "";
+                ttip.ToolTipTitle = "Ball Attribution";
+
+                foreach (VisibleBall b in balls)
+                    if (b.GetDistance(GetMouseRelativePosition().X, GetMouseRelativePosition().Y) < b.R)
+                        BallPointed += String.Format("M={0:f}, R={1:f}\nPos=({2:f},{3:f})\nV=({4:f},{5:f})\np={6:f}\nEk={7:f}\n",
+                            b.Mass, b.R, b.Pos.x, b.Pos.y, b.GetVx(), b.GetVy(), b.GetResultantMomentum(), b.GetEnergy());
+
+                if (BallPointed != "")
+                    ttip.Show(BallPointed, this);
+                else
+                    ttip.Hide(this);
+            }
+            else
+            {
+                Double EnergyAll = 0, MomentumAll = 0;
+                ttip.ToolTipTitle = "Conservative Sums";
+
+                foreach (VisibleBall b in balls)
+                {
+                    MomentumAll += b.GetResultantMomentum();
+                    EnergyAll += b.GetEnergy();
+                }
+
+                ttip.Show(String.Format("Ek(sum)={0:f}\np(sum)={1:f}", EnergyAll, MomentumAll), this);
+            }
         }
 
         private Point GetMouseRelativePosition()
