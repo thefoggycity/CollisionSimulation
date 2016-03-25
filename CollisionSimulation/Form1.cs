@@ -91,10 +91,12 @@ namespace CollisionSimulation
             for (int i = 0; i < balls.GetLength(0); i++)
             {
                 balls[i].Move(tr);
-                if (balls[i].Pos.x - balls[i].R + O.x <= 0 || balls[i].Pos.x + balls[i].R + O.x >= this.Width)
-                    VisibleBall.Bounce(ref balls[i], new Ball.Vector(0, 1, Ball.Vector.Type.Momentum));
-                if (balls[i].Pos.y - balls[i].R + O.y <= 0 || balls[i].Pos.y + balls[i].R + O.y >= this.Height)
-                    VisibleBall.Bounce(ref balls[i], new Ball.Vector(1, 0, Ball.Vector.Type.Momentum));
+                if ((balls[i].Pos.x - balls[i].R + O.x <= 0 && balls[i].GetVx() < 0)
+                    || (balls[i].Pos.x + balls[i].R + O.x >= this.Width && balls[i].GetVx() > 0))
+                    balls[i].SetMomentum(-balls[i].P.x, balls[i].P.y);
+                if ((balls[i].Pos.y - balls[i].R + O.y <= 0 && balls[i].GetVy() < 0)
+                    || (balls[i].Pos.y + balls[i].R + O.y >= this.Height && balls[i].GetVy() > 0))
+                    balls[i].SetMomentum(balls[i].P.x, -balls[i].P.y);
             }
 
             for (int i = 0; i < balls.GetUpperBound(0); i++)
