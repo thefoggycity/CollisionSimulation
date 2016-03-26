@@ -14,10 +14,13 @@ namespace CollisionSimulation
     {
         const Double    
             DEFAULT_SIZE = 2,
-            DEFAULT_TIMERATE = 0.2,
+            DEFAULT_TIMERATE = 0.1,
             DEFAULT_ORI_X = 250,
             DEFAULT_ORI_Y = 180;
-        const Boolean DEFAULT_COOR = true;
+        const int 
+            DEFAULT_PAINTFREQ = 4;
+        const Boolean 
+            DEFAULT_COOR = true;
 
         public VisibleBall[] balls;
         public Double tr, infosz;
@@ -29,6 +32,7 @@ namespace CollisionSimulation
         ToolTip ttip = new ToolTip();
         Bitmap bmp;
         Graphics g;
+        int timercount = 0;
 
         public Form1()
         {
@@ -73,9 +77,9 @@ namespace CollisionSimulation
             }
         }
 
-        void Form1_MouseMove(object sender, MouseEventArgs e)
+        private void Form1_MouseMove(object sender, MouseEventArgs e)
         {
-            if (InitializedFlag && sz != 0 && !timer1.Enabled)
+            if (InitializedFlag && sz != 0 && !timer1.Enabled && Coor)
             {
                 bmp = new Bitmap(this.Width, this.Height);
                 g = Graphics.FromImage(bmp);
@@ -148,6 +152,7 @@ namespace CollisionSimulation
             button2.Text = "Pause";
             button2.Enabled = true;
             timer1.Enabled = true;
+            timercount = 0;
         }
 
         private void timer1_Tick(object sender, EventArgs e)
@@ -168,12 +173,17 @@ namespace CollisionSimulation
                     if (VisibleBall.ChkCollision(balls[i], balls[j]) <= 0)
                         VisibleBall.Collide(ref balls[i], ref balls[j], tr);
 
-            g.Clear(Color.Transparent);
-            PlotCoordinate(ref g, O, Color.Black);
-            foreach(VisibleBall b in balls)
-                b.Draw(ref g, O, sz);
-            
-            this.Refresh();
+            if (DEFAULT_PAINTFREQ == timercount++)
+            {
+                timercount = 0;
+
+                g.Clear(Color.Transparent);
+                PlotCoordinate(ref g, O, Color.Black);
+                foreach (VisibleBall b in balls)
+                    b.Draw(ref g, O, sz);
+
+                this.Refresh();
+            }
         }
 
         private void button2_Click(object sender, EventArgs e)
@@ -182,6 +192,13 @@ namespace CollisionSimulation
             {
                 timer1.Enabled = false;
                 button2.Text = "Continue";
+
+                g.Clear(Color.Transparent);
+                PlotCoordinate(ref g, O, Color.Black);
+                foreach (VisibleBall b in balls)
+                    b.Draw(ref g, O, sz);
+
+                this.Refresh();
             }
             else
             {

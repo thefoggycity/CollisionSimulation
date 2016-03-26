@@ -48,7 +48,7 @@
             // 
             // timer1
             // 
-            this.timer1.Interval = 40;
+            this.timer1.Interval = 5;
             this.timer1.Tick += new System.EventHandler(this.timer1_Tick);
             // 
             // button2
@@ -86,11 +86,11 @@
             this.Name = "Form1";
             this.Text = "CollisionSimulation";
             this.Load += new System.EventHandler(this.Form1_Load);
-            this.Resize += new System.EventHandler(this.Form1_Resize);
             this.DoubleClick += new System.EventHandler(this.Form1_DoubleClick);
             this.MouseDown += new System.Windows.Forms.MouseEventHandler(this.Form1_MouseDown);
             this.MouseHover += new System.EventHandler(this.Form1_MouseHover);
             this.MouseMove += new System.Windows.Forms.MouseEventHandler(this.Form1_MouseMove);
+            this.Resize += new System.EventHandler(this.Form1_Resize);
             this.ResumeLayout(false);
             this.PerformLayout();
 
