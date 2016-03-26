@@ -339,6 +339,21 @@ namespace CollisionSimulation
 
         private void button1_Click(object sender, EventArgs e)
         {
+            String OverlappedBalls = "";
+            for (int i = 0; i < balls.GetUpperBound(0); i++)
+                for (int j = i + 1; j <= balls.GetUpperBound(0); j++)
+                    if (VisibleBall.ChkCollision(balls[i], balls[j]) < 0)
+                        OverlappedBalls += String.Format("\nBall #{0} with Ball #{1}", i + 1, j + 1);
+
+            if (OverlappedBalls != "")
+            {
+                DialogResult r = MessageBox.Show(this, 
+                    String.Format("Detected overlapped balls:{0}\nProceed to simulation anyway?", OverlappedBalls),
+                    "Warning", MessageBoxButtons.YesNo, MessageBoxIcon.Exclamation, MessageBoxDefaultButton.Button2);
+                if (r == DialogResult.No)
+                    return;
+            }
+
             Form1 mainform = (Form1)this.Owner;
 
             mainform.balls = this.balls;
