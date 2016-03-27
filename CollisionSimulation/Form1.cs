@@ -248,8 +248,8 @@ namespace CollisionSimulation
 
                 foreach (VisibleBall b in balls)
                     if (b.GetDistance(GetMouseRelativePosition().X, GetMouseRelativePosition().Y) < b.R)
-                        BallPointed += String.Format("M={0:f}, R={1:f}\nPos=({2:f},{3:f})\nV=({4:f},{5:f})\np={6:f}\nEk={7:f}\n",
-                            b.Mass, b.R, b.Pos.x, b.Pos.y, b.GetVx(), b.GetVy(), b.GetResultantMomentum(), b.GetEnergy());
+                        BallPointed += String.Format("M={0:f}, R={1:f}\nPos=({2:f},{3:f})\nV=({4:f},{5:f})\n|V|={6:f}\np=({7:f},{8:f})\nEk={9:f}\n",
+                            b.Mass, b.R, b.Pos.x, b.Pos.y, b.GetVx(), b.GetVy(), b.GetResultantVelocity(), b.P.x, b.P.y, b.GetEnergy());
 
                 if (BallPointed != "")
                     ttip.Show(BallPointed, this);
@@ -258,16 +258,18 @@ namespace CollisionSimulation
             }
             else
             {
-                Double EnergyAll = 0, MomentumAll = 0;
+                Double EnergyAll = 0;
+                Ball.Vector MomentumAll = new Ball.Vector (0,0,Ball.Vector.Type.Momentum);
                 ttip.ToolTipTitle = "Conservative Sums";
 
                 foreach (VisibleBall b in balls)
                 {
-                    MomentumAll += b.GetResultantMomentum();
+                    MomentumAll.x += b.P.x;
+                    MomentumAll.y += b.P.y;
                     EnergyAll += b.GetEnergy();
                 }
 
-                ttip.Show(String.Format("Ek(sum)={0:f}\np(sum)={1:f}", EnergyAll, MomentumAll), this);
+                ttip.Show(String.Format("Ek(sum)={0:f}\np(sum)=({1:f},{2:f})", EnergyAll, MomentumAll.x, MomentumAll.y), this);
             }
         }
 
