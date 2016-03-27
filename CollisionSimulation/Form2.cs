@@ -235,11 +235,8 @@ namespace CollisionSimulation
             try
             {
                 Double val = Convert.ToDouble(textBox7.Text);
-                if (val > 0)
-                {
-                    balls[listBox1.SelectedIndex].Pos.x = val;
-                    ListUpdate(listBox1.SelectedIndex);
-                }
+                balls[listBox1.SelectedIndex].Pos.x = val;
+                ListUpdate(listBox1.SelectedIndex);
             }
             catch
             {
@@ -253,11 +250,8 @@ namespace CollisionSimulation
             try
             {
                 Double val = Convert.ToDouble(textBox8.Text);
-                if (val > 0)
-                {
-                    balls[listBox1.SelectedIndex].Pos.y = val;
-                    ListUpdate(listBox1.SelectedIndex);
-                }
+                balls[listBox1.SelectedIndex].Pos.y = val;
+                ListUpdate(listBox1.SelectedIndex);
             }
             catch
             {
@@ -271,11 +265,8 @@ namespace CollisionSimulation
             try
             {
                 Double val = Convert.ToDouble(textBox9.Text);
-                if (val > 0)
-                {
-                    balls[listBox1.SelectedIndex].SetMomentumByVelocity(val, balls[listBox1.SelectedIndex].GetVy());
-                    ListUpdate(listBox1.SelectedIndex);
-                }
+                balls[listBox1.SelectedIndex].SetMomentumByVelocity(val, balls[listBox1.SelectedIndex].GetVy());
+                ListUpdate(listBox1.SelectedIndex);
             }
             catch
             {
@@ -289,11 +280,8 @@ namespace CollisionSimulation
             try
             {
                 Double val = Convert.ToDouble(textBox10.Text);
-                if (val > 0)
-                {
-                    balls[listBox1.SelectedIndex].SetMomentumByVelocity(balls[listBox1.SelectedIndex].GetVx(), val);
-                    ListUpdate(listBox1.SelectedIndex);
-                }
+                balls[listBox1.SelectedIndex].SetMomentumByVelocity(balls[listBox1.SelectedIndex].GetVx(), val);
+                ListUpdate(listBox1.SelectedIndex);
             }
             catch
             {
@@ -313,7 +301,7 @@ namespace CollisionSimulation
 
         private void button3_Click(object sender, EventArgs e)
         {
-            int NewIndex = listBox1.Items.Add(balls[listBox1.SelectedIndex]);
+            int NewIndex = listBox1.Items.Add(new VisibleBall(balls[listBox1.SelectedIndex].Convert(), balls[listBox1.SelectedIndex].Col));
             ArrayUpdate();
             listBox1.SelectedIndex = NewIndex;
         }
